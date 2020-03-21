@@ -1,22 +1,17 @@
 var express = require('express');
 var router = express.Router();
 const db = require('../../config/db');
+const { processedResults } = require('../../middleware/index.js')
 const { joiRolesFormsInsert, joiRolesFormsUpdate } = require('../../joiSchemas/security/joiRoles_forms');
 
 // roles_forms : GET ALL route
-router.get('/get',(req,res) => {
-  //where Organization_ID clause needs to be added
-  db.query('SELECT * from roles_forms',(err,rows) => {
-    if(err) throw err;
-
-    // console.log(rows)
-    res.status(200).send(rows);
-  })
+router.get('/get',processedResults('rolesForms'),(req,res) => {
+  res.json(res.processedResults);
 })
 
 // roles_forms : POST route
 router.post('/post',(req,res) => {
-  const { error, value } = joiUserRolesInsert.validate(req.body);
+  const { error, value } = joiRolesFormsInsert.validate(req.body);
   if(error){
     console.log(error);
     return res.status(403).send(error);
@@ -32,7 +27,7 @@ router.post('/post',(req,res) => {
 
 // roles_forms : UPDATE route
 router.put('/update/:id', (req,res) => {
-  const { error, value } = joiUserRolesUpdate.validate(req.body);
+  const { error, value } = joiRolesFormsUpdate.validate(req.body);
   if(error){
     console.log(error);
     return res.status(403).send(error);

@@ -1,17 +1,12 @@
 var express = require('express');
 var router = express.Router();
 const db = require('../../config/db');
+const { processedResults } = require('../../middleware/index.js')
 const { joiRolesModulesInsert, joiRolesModulesUpdate } = require('../../joiSchemas/security/joiRoles_modules');
 
 // roles_modules : GET ALL route
-router.get('/get',(req,res) => {
-  //where Organization_ID clause needs to be added
-  db.query('SELECT * from roles_modules',(err,rows) => {
-    if(err) throw err;
-
-    // console.log(rows)
-    res.status(200).send(rows);
-  })
+router.get('/get',processedResults('rolesModules'),(req,res) => {
+  res.json(res.processedResults);
 })
 
 // roles_modules : POST route

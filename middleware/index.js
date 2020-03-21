@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { getQueryFromTable } = require('./query.js');
 
 const processedResults = (tableName) => {
   return async (req, res, next) => {
@@ -8,25 +9,19 @@ const processedResults = (tableName) => {
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
     // console.log(page,limit,searchTerm);
-
-    const query = `SELECT * from ${tableName} ORDER BY Application_ID ASC limit ${limit} OFFSET ${startIndex}`;
-
-  	const countQuery = `SELECT count(*) as totalCount from ${tableName}`;
-
-    const searchQuery = `SELECT * from ${tableName} WHERE Application_Name LIKE '%${searchTerm}%' OR
-			Application_Short_Name LIKE '%${searchTerm}%' OR Application_Desc LIKE '%${searchTerm}%' 
-			ORDER BY Application_ID ASC limit ${limit} OFFSET ${startIndex}`;
-
-  	const searchCountQuery = `SELECT count(*) as totalCount from ${tableName} WHERE Application_Name LIKE '%${searchTerm}%' OR
-			Application_Short_Name LIKE '%${searchTerm}%' OR Application_Desc LIKE '%${searchTerm}%'`;	
-
+    const { 
+    query,
+    countQuery,
+    searchQuery,
+    searchCountQuery } = getQueryFromTable(tableName,searchTerm,limit,startIndex);
+    
 		const results = {};	
 
     if(searchTerm !== ''){
     	// console.log('in search')
   	 	db.query(searchCountQuery,(err,rows) => {
 				if(err) throw err;
-				console.log(rows[0].totalCount);
+				// console.log(rows[0].totalCount);
 				const numberOfRows = rows[0].totalCount;	
  	
 				results["totalPages"] = Math.ceil(numberOfRows/limit);
