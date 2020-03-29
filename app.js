@@ -14,6 +14,7 @@ var rolesFormsRouter = require('./routes/security/rolesFormsRoute');
 var rolesModulesRouter = require('./routes/security/rolesModulesRoute');
 var usersRouter = require('./routes/security/usersRoute');
 var userRolesRouter = require('./routes/security/userRolesRoute');
+var loginRouter =  require('./routes/loginRoute.js');
 
 var app = express();
 app.use(cors());
@@ -46,6 +47,7 @@ app.use('/api/roles-forms', rolesFormsRouter);
 app.use('/api/roles', rolesRouter);
 app.use('/api/user-roles', userRolesRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/login', loginRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
