@@ -1,0 +1,56 @@
+var express = require('express');
+var router = express.Router();
+const db = require('../config/db');
+const isAuthenticated = require('../middleware/isAuthenticated');
+const bcrypt = require('bcryptjs');
+const JWT = require('jsonwebtoken');
+const SECRET = 'jwtTOken'; // will be set in env later
+
+
+/* test route */
+router.get('/test',isAuthenticated,(req,res) => {
+	res.send(200,'TEST PASS')
+})
+
+
+/* user login Route */
+router.post('/',(req,res) => {
+	const email = req.body.email;
+  const password = req.body.password;
+
+  if (email && password) {
+    db.query('SELECT User_hpassword,User_ID,User_Email FROM users WHERE User_Email = ?', [email], 
+      (error, results, fields)=> {
+      	const { User_ID, User_hpassword } = results[0];
+        if (results.length > 0 && bcrypt.compareSync(password, User_hpassword)) {
+      		db.query('CALL getFormsAndModules(?)',[User_ID],(error, results, fields) => {
+					  if (error) {
+					    return console.error(error.message);
+					  }
+					  const payload = {
+					  	email: email,
+					  	id: User_ID
+					  }
+					  const token = JWT.sign(payload,SECRET);
+					  res.cookie('access_token',token,{
+					  	maxAge:43200, // 12 Hours
+					  	httpOnly:true,
+					  	// secure:true // will be set in productions requires HTTPS
+					  })
+					  res.status(200).json({
+					  	forms:results[0],
+					  	modules:results[1]
+					  })
+					})
+        } else {
+          res.send('Incorrect Email and/or Password!');
+        }           
+    });
+  } else {
+    res.send('Please enter Username and Password!');
+    res.end();
+  }
+})
+
+
+module.exports = router;

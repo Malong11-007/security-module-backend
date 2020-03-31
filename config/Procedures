@@ -1,0 +1,9 @@
+CREATE DEFINER=`root`@`localhost` PROCEDURE `getFormsAndModules`(IN userID INT)
+BEGIN
+	SET @modulesID := (SELECT GROUP_CONCAT(Module_ID) FROM techbiz_ebs.roles_forms WHERE Role_ID IN (SELECT Role_ID FROM techbiz_ebs.user_roles WHERE User_ID = userID));
+	SET @formsID := (SELECT GROUP_CONCAT(Form_ID) FROM techbiz_ebs.roles_forms WHERE Role_ID IN (SELECT Role_ID FROM techbiz_ebs.user_roles WHERE User_ID = userID));
+
+	SELECT Form_ID,Form_Name FROM techbiz_ebs.forms WHERE FIND_IN_SET(Form_ID,@formsID);
+	SELECT Module_ID,Module_Name FROM techbiz_ebs.modules WHERE FIND_IN_SET(Module_ID,@modulesID);
+	
+END
