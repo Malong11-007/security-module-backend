@@ -7,3 +7,20 @@ BEGIN
 	SELECT Module_ID,Module_Name FROM techbiz_ebs.modules WHERE FIND_IN_SET(Module_ID,@modulesID);
 	
 END
+
+
+// Incomplete
+CREATE DEFINER=`root`@`localhost` PROCEDURE `getItemDetails`(IN itemID INT, IN uomID INT)
+BEGIN
+	select UOM_Name from uom where UOM_ID = uomID;
+    -- remaining queries to be added
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `getRolesModulesForms`(
+	IN `OrganizationID` INT
+)
+BEGIN
+SELECT Form_ID,Form_Name,Module_ID FROM forms;
+SELECT Module_ID,Module_Name FROM modules;
+SELECT Role_ID,Role_Name FROM roles WHERE Organization_ID = OrganizationID;
+END

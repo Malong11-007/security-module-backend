@@ -1,7 +1,6 @@
 var express = require('express');
 var router = express.Router();
 const db = require('../../config/db');
-const { processedResults } = require('../../middleware/index.js')
 const { joiRolesModulesInsert, joiRolesModulesUpdate } = require('../../joiSchemas/security/joiRoles_modules');
 
 // roles_modules : GET ALL route
@@ -12,13 +11,6 @@ router.get('/get/:Organization_ID',(req,res) => {
   const startIndex = (page - 1) * limit;
   const endIndex = page * limit;
   const { Organization_ID } = req.params
-
-  let query = 
-  `SELECT Role_Module_ID,r.Role_ID,r.Role_Name,m.Module_ID,m.Module_Name, rm.Enabled_Flag
-  from roles_modules AS rm INNER JOIN roles AS r ON rm.Role_ID = r.Role_ID
-  INNER JOIN modules AS m ON rm.Module_ID = m.Module_ID
-  WHERE rm.Organization_ID = ${Organization_ID}
-  ORDER BY Role_Module_ID ASC limit ${limit} OFFSET ${startIndex}`;
  
   let searchQuery = 
   `SELECT Role_Module_ID,r.Role_ID,r.Role_Name,m.Module_ID,m.Module_Name, rm.Enabled_Flag
@@ -34,88 +26,44 @@ router.get('/get/:Organization_ID',(req,res) => {
   INNER JOIN modules AS m ON rm.Module_ID = m.Module_ID
   WHERE r.Role_Name LIKE '%${searchTerm}%' OR m.Module_Name LIKE '%${searchTerm}%'
  	AND rm.Organization_ID = ${Organization_ID}`;
-
-	let countQuery = 
-	`SELECT count(*) as totalCount from roles_modules
-	WHERE Organization_ID = ${Organization_ID}`;
-
-	const results = {};	
-
-    if(searchTerm !== ''){
-    	// console.log('in search')
-  	 	db.query(searchCountQuery,(err,rows) => {
-				if (err) {
-	        console.log(err);
-	        return res.status(400).send(err);
-	      };
-				// console.log(rows[0].totalCount);
-				const numberOfRows = rows[0].totalCount;	
  	
-				results["totalPages"] = Math.ceil(numberOfRows/limit);
+	const results = {};	
+	
+	db.query(searchCountQuery,(err,rows) => {
+		if (err) {
+      console.log(err);
+      return res.status(400).send(err);
+    };
+		// console.log(rows[0].totalCount);
+		const numberOfRows = rows[0].totalCount;	
 
-				if (endIndex < numberOfRows) {
-		      results.next = {
-		        page: page + 1,
-		        limit: limit
-		      }
-		    }
-		    
-		    if (startIndex > 0) {
-		      results.previous = {
-		        page: page - 1,
-		        limit: limit
-		      }
-		    }
+		results["totalPages"] = Math.ceil(numberOfRows/limit);
 
-		    db.query(searchQuery,(err,rows) => {
-		    	if (err) {
-		        console.log(err);
-		        return res.status(400).send(err);
-		      };
-		    	// console.log('rows',rows)
-
-		    	results['results'] = rows;
-		    	res.status(200).send(results);
-		    })
-			})
-
-    } else {
-    	// console.log('in empty search')
-  		db.query(countQuery,(err,rows) => {
-				if (err) {
-	        console.log(err);
-	        return res.status(400).send(err);
-	      };
-				// console.log(rows[0].totalCount);
-				const numberOfRows = rows[0].totalCount;	
-
-				results["totalPages"] = Math.ceil(numberOfRows/limit);
-				
-				if (endIndex <  numberOfRows) {
-		      results.next = {
-		        page: page + 1,
-		        limit: limit
-		      }
-		    }
-		    
-		    if (startIndex > 0) {
-		      results.previous = {
-		        page: page - 1,
-		        limit: limit
-		      }
-		    }
-
-		    db.query(query,(err,rows) => {
-		    	if (err) {
-		        console.log(err);
-		        return res.status(400).send(err);
-		      };
-
-		    	results['results'] = rows;
-		    	res.status(200).send(results);
-		    })
-			})
+		if (endIndex < numberOfRows) {
+      results.next = {
+        page: page + 1,
+        limit: limit
+      }
     }
+    
+    if (startIndex > 0) {
+      results.previous = {
+        page: page - 1,
+        limit: limit
+      }
+    }
+
+    db.query(searchQuery,(err,rows) => {
+    	if (err) {
+        console.log(err);
+        return res.status(400).send(err);
+      };
+    	// console.log('rows',rows)
+
+    	results['results'] = rows;
+    	res.status(200).send(results);
+    })
+	})
 })
 
 // roles_modules : POST route

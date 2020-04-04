@@ -1,7 +1,6 @@
 var express = require('express');
 var router = express.Router();
 const db = require('../../config/db');
-const { processedResults } = require('../../middleware/index.js')
 const { joiRolesInsert, joiRolesUpdate } = require('../../joiSchemas/security/joiRoles');
 
 // Roles : GET ALL route
@@ -12,15 +11,6 @@ router.get('/get/:Organization_ID',(req,res) => {
   const startIndex = (page - 1) * limit;
   const endIndex = page * limit;
   const { Organization_ID } = req.params
-
-  let countQuery =
-  `SELECT count(*) as totalCount from roles
-  WHERE Organization_ID = ${Organization_ID}`;
-
-	let query =
-	`SELECT Role_ID, Role_Name, Role_Desc, Organization_ID, Enabled_Flag from roles 
-	WHERE Organization_ID = ${Organization_ID}
-	ORDER BY Role_ID ASC limit ${limit} OFFSET ${startIndex}`;
 
 	let searchQuery = 
 	`SELECT Role_ID, Role_Name, Role_Desc, Organization_ID, Enabled_Flag from roles
@@ -36,116 +26,40 @@ router.get('/get/:Organization_ID',(req,res) => {
   const results = {};	
 
   db.query(searchCountQuery,(err,rows) => {
-			if (err) {
+		if (err) {
+      console.log(err);
+      return res.status(400).send(err);
+    };
+		// console.log(rows[0].totalCount);
+		const numberOfRows = rows[0].totalCount;	
+
+		results["totalPages"] = Math.ceil(numberOfRows/limit);
+
+		if (endIndex < numberOfRows) {
+      results.next = {
+        page: page + 1,
+        limit: limit
+      }
+    }
+    
+    if (startIndex > 0) {
+      results.previous = {
+        page: page - 1,
+        limit: limit
+      }
+    }
+
+    db.query(searchQuery,(err,rows) => {
+    	if (err) {
         console.log(err);
         return res.status(400).send(err);
       };
-			// console.log(rows[0].totalCount);
-			const numberOfRows = rows[0].totalCount;	
-	
-			results["totalPages"] = Math.ceil(numberOfRows/limit);
+    	// console.log('rows',rows)
 
-			if (endIndex < numberOfRows) {
-	      results.next = {
-	        page: page + 1,
-	        limit: limit
-	      }
-	    }
-	    
-	    if (startIndex > 0) {
-	      results.previous = {
-	        page: page - 1,
-	        limit: limit
-	      }
-	    }
-
-	    db.query(searchQuery,(err,rows) => {
-	    	if (err) {
-	        console.log(err);
-	        return res.status(400).send(err);
-	      };
-	    	// console.log('rows',rows)
-
-	    	results['results'] = rows;
-	    	res.status(200).send(results);
-	    })
-		})
-
-  if(searchTerm !== ''){
-  	// console.log('in search')
-	 	db.query(searchCountQuery,(err,rows) => {
-			if (err) {
-        console.log(err);
-        return res.status(400).send(err);
-      };
-			// console.log(rows[0].totalCount);
-			const numberOfRows = rows[0].totalCount;	
-	
-			results["totalPages"] = Math.ceil(numberOfRows/limit);
-
-			if (endIndex < numberOfRows) {
-	      results.next = {
-	        page: page + 1,
-	        limit: limit
-	      }
-	    }
-	    
-	    if (startIndex > 0) {
-	      results.previous = {
-	        page: page - 1,
-	        limit: limit
-	      }
-	    }
-
-	    db.query(searchQuery,(err,rows) => {
-	    	if (err) {
-	        console.log(err);
-	        return res.status(400).send(err);
-	      };
-	    	// console.log('rows',rows)
-
-	    	results['results'] = rows;
-	    	res.status(200).send(results);
-	    })
-		})
-
-  } else {
-  	// console.log('in empty search')
-		db.query(countQuery,(err,rows) => {
-			if (err) {
-        console.log(err);
-        return res.status(400).send(err);
-      };
-			// console.log(rows[0].totalCount);
-			const numberOfRows = rows[0].totalCount;	
-
-			results["totalPages"] = Math.ceil(numberOfRows/limit);
-			
-			if (endIndex <  numberOfRows) {
-	      results.next = {
-	        page: page + 1,
-	        limit: limit
-	      }
-	    }
-	    
-	    if (startIndex > 0) {
-	      results.previous = {
-	        page: page - 1,
-	        limit: limit
-	      }
-	    }
-
-	    db.query(query,(err,rows) => {
-	    	if (err) {
-	        console.log(err);
-	        return res.status(400).send(err);
-	      };
-
-	    	results['results'] = rows;
-	    	res.status(200).send(results);
-	    })
-		})
-  }
+    	results['results'] = rows;
+    	res.status(200).send(results);
+    })
+	})
 })
 
 // Roles : POST route
