@@ -5,8 +5,109 @@ const { processedResults } = require('../../middleware/index.js')
 const { joiApplicationInsert, joiApplicationUpdate } = require('../../joiSchemas/security/joiApplication');
 
 // application : GET ALL route
-router.get('/get',processedResults('application'),(req,res) => {
-	res.json(res.processedResults);
+router.get('/get',(req,res) => {
+	const page = parseInt(req.query.page)
+  const limit = parseInt(req.query.limit)
+  const searchTerm = req.query.search;
+  const startIndex = (page - 1) * limit;
+  const endIndex = page * limit;
+  const { Organization_ID } = req.params
+
+  let countQuery =
+  `SELECT count(*) as totalCount from application`;
+
+	let query =
+	`SELECT Application_ID, Application_Name, Application_Desc,
+	Application_Short_Name, Enabled_Flag from application 
+	ORDER BY Application_ID ASC limit ${limit} OFFSET ${startIndex}`;
+
+	let searchQuery = 
+	`SELECT Application_ID, Application_Name, Application_Desc, Application_Short_Name,
+	Enabled_Flag from application WHERE Application_Name LIKE '%${searchTerm}%' OR
+  Application_Short_Name LIKE '%${searchTerm}%' OR Application_Desc LIKE '%${searchTerm}%'
+  ORDER BY Application_ID ASC limit ${limit} OFFSET ${startIndex}`;
+   
+  let searchCountQuery = 
+  `SELECT count(*) as totalCount from application WHERE Application_Name LIKE '%${searchTerm}%' OR
+  Application_Short_Name LIKE '%${searchTerm}%' OR Application_Desc LIKE '%${searchTerm}%'`;
+
+  const results = {};	
+
+  if(searchTerm !== ''){
+  	// console.log('in search')
+	 	db.query(searchCountQuery,(err,rows) => {
+			if (err) {
+        console.log(err);
+        return res.status(400).send(err);
+      };
+			// console.log(rows[0].totalCount);
+			const numberOfRows = rows[0].totalCount;	
+	
+			results["totalPages"] = Math.ceil(numberOfRows/limit);
+
+			if (endIndex < numberOfRows) {
+	      results.next = {
+	        page: page + 1,
+	        limit: limit
+	      }
+	    }
+	    
+	    if (startIndex > 0) {
+	      results.previous = {
+	        page: page - 1,
+	        limit: limit
+	      }
+	    }
+
+	    db.query(searchQuery,(err,rows) => {
+	    	if (err) {
+	        console.log(err);
+	        return res.status(400).send(err);
+	      };
+	    	// console.log('rows',rows)
+
+	    	results['results'] = rows;
+	    	res.status(200).send(results);
+	    })
+		})
+
+  } else {
+  	// console.log('in empty search')
+		db.query(countQuery,(err,rows) => {
+			if (err) {
+        console.log(err);
+        return res.status(400).send(err);
+      };
+			// console.log(rows[0].totalCount);
+			const numberOfRows = rows[0].totalCount;	
+
+			results["totalPages"] = Math.ceil(numberOfRows/limit);
+			
+			if (endIndex <  numberOfRows) {
+	      results.next = {
+	        page: page + 1,
+	        limit: limit
+	      }
+	    }
+	    
+	    if (startIndex > 0) {
+	      results.previous = {
+	        page: page - 1,
+	        limit: limit
+	      }
+	    }
+
+	    db.query(query,(err,rows) => {
+	    	if (err) {
+	        console.log(err);
+	        return res.status(400).send(err);
+	      };
+
+	    	results['results'] = rows;
+	    	res.status(200).send(results);
+	    })
+		})
+  }
 })
 
 // application : POST route

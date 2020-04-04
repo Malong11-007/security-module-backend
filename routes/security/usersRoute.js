@@ -5,8 +5,122 @@ const { processedResults } = require('../../middleware/index.js')
 const { joiUsersInsert, joiUsersUpdate } = require('../../joiSchemas/security/joiUsers');
 
 // User : GET ALL route
-router.get('/get',processedResults('users'),(req,res) => {
-  res.json(res.processedResults);
+router.get('/get/:Organization_ID',(req,res) => {
+	const page = parseInt(req.query.page)
+  const limit = parseInt(req.query.limit)
+  const searchTerm = req.query.search;
+  const startIndex = (page - 1) * limit;
+  const endIndex = page * limit;
+  const { Organization_ID } = req.params
+
+  let countQuery =
+  `SELECT count(*) as totalCount from users
+  WHERE Organization_ID = ${Organization_ID}`;
+
+	let query = 
+	`SELECT User_ID, User_Name, User_Status, User_Email, User_Mobile, Employee_ID,
+	 Host_ID_Restric, Last_Login_Date, Last_Host_ID, Account_Locked_Flag,
+	 HostID_at_Time_Locked, Time_Date_Locked, Branch_ID, Enabled_Flag from users 
+	WHERE Organization_ID = ${Organization_ID}
+	ORDER BY User_ID ASC limit ${limit} OFFSET ${startIndex}`;
+
+  let searchQuery = 
+  `SELECT User_ID, User_Name, User_Status, User_Email, User_Mobile, Employee_ID, Host_ID_Restric,
+  Last_Login_Date, Last_Host_ID, Account_Locked_Flag, HostID_at_Time_Locked, Time_Date_Locked,
+  Branch_ID, Enabled_Flag from users WHERE User_Name LIKE '%${searchTerm}%' OR
+  User_Status LIKE '%${searchTerm}%' OR User_Email LIKE '%${searchTerm}%' OR
+  User_Mobile LIKE '%${searchTerm}%' OR Employee_ID LIKE '%${searchTerm}%' OR
+  Host_ID_Restric LIKE '%${searchTerm}%' OR Account_Looked_Flag LIKE '%${searchTerm}%' OR
+  User_ID LIKE '%${searchTerm}%' OR HostID_at_Time_Locked LIKE '%${searchTerm}%'
+  AND Organization_ID = ${Organization_ID}
+  ORDER BY User_ID ASC limit ${limit} OFFSET ${startIndex}`;
+
+  let searchCountQuery = 
+  `SELECT count(*) as totalCount from users WHERE User_Name LIKE '%${searchTerm}%' OR
+  User_Status LIKE '%${searchTerm}%' OR User_Email LIKE '%${searchTerm}%' OR
+  User_Mobile LIKE '%${searchTerm}%' OR Employee_ID LIKE '%${searchTerm}%' OR
+  Host_ID_Restric LIKE '%${searchTerm}%' OR Account_Looked_Flag LIKE '%${searchTerm}%' OR
+  User_ID LIKE '%${searchTerm}%' OR HostID_at_Time_Locked LIKE '%${searchTerm}%'
+  AND Organization_ID = ${Organization_ID}
+  ORDER BY User_ID ASC limit ${limit} OFFSET ${startIndex}`;
+
+  const results = {};	
+
+  if(searchTerm !== ''){
+  	// console.log('in search')
+	 	db.query(searchCountQuery,(err,rows) => {
+			if (err) {
+        console.log(err);
+        return res.status(400).send(err);
+      };
+			// console.log(rows[0].totalCount);
+			const numberOfRows = rows[0].totalCount;	
+	
+			results["totalPages"] = Math.ceil(numberOfRows/limit);
+
+			if (endIndex < numberOfRows) {
+	      results.next = {
+	        page: page + 1,
+	        limit: limit
+	      }
+	    }
+	    
+	    if (startIndex > 0) {
+	      results.previous = {
+	        page: page - 1,
+	        limit: limit
+	      }
+	    }
+
+	    db.query(searchQuery,(err,rows) => {
+	    	if (err) {
+	        console.log(err);
+	        return res.status(400).send(err);
+	      };
+	    	// console.log('rows',rows)
+
+	    	results['results'] = rows;
+	    	res.status(200).send(results);
+	    })
+		})
+
+  } else {
+  	// console.log('in empty search')
+		db.query(countQuery,(err,rows) => {
+			if (err) {
+        console.log(err);
+        return res.status(400).send(err);
+      };
+			// console.log(rows[0].totalCount);
+			const numberOfRows = rows[0].totalCount;	
+
+			results["totalPages"] = Math.ceil(numberOfRows/limit);
+			
+			if (endIndex <  numberOfRows) {
+	      results.next = {
+	        page: page + 1,
+	        limit: limit
+	      }
+	    }
+	    
+	    if (startIndex > 0) {
+	      results.previous = {
+	        page: page - 1,
+	        limit: limit
+	      }
+	    }
+
+	    db.query(query,(err,rows) => {
+	    	if (err) {
+	        console.log(err);
+	        return res.status(400).send(err);
+	      };
+
+	    	results['results'] = rows;
+	    	res.status(200).send(results);
+	    })
+		})
+  }
 })
 
 // User : POST route

@@ -5,8 +5,147 @@ const { processedResults } = require('../../middleware/index.js')
 const { joiRolesInsert, joiRolesUpdate } = require('../../joiSchemas/security/joiRoles');
 
 // Roles : GET ALL route
-router.get('/get',processedResults('roles'),(req,res) => {
-  res.json(res.processedResults);
+router.get('/get/:Organization_ID',(req,res) => {
+ 	const page = parseInt(req.query.page)
+  const limit = parseInt(req.query.limit)
+  const searchTerm = req.query.search;
+  const startIndex = (page - 1) * limit;
+  const endIndex = page * limit;
+  const { Organization_ID } = req.params
+
+  let countQuery =
+  `SELECT count(*) as totalCount from roles
+  WHERE Organization_ID = ${Organization_ID}`;
+
+	let query =
+	`SELECT Role_ID, Role_Name, Role_Desc, Organization_ID, Enabled_Flag from roles 
+	WHERE Organization_ID = ${Organization_ID}
+	ORDER BY Role_ID ASC limit ${limit} OFFSET ${startIndex}`;
+
+	let searchQuery = 
+	`SELECT Role_ID, Role_Name, Role_Desc, Organization_ID, Enabled_Flag from roles
+ 	WHERE Role_Name LIKE '%${searchTerm}%' OR Role_Desc LIKE '%${searchTerm}%' 
+  AND Organization_ID = ${Organization_ID}
+  ORDER BY Role_ID ASC limit ${limit} OFFSET ${startIndex}`;
+   
+  let searchCountQuery = 
+  `SELECT count(*) as totalCount from roles
+  WHERE Role_Name LIKE '%${searchTerm}%' OR Role_Desc LIKE '%${searchTerm}%'
+  AND Organization_ID = ${Organization_ID}`;
+
+  const results = {};	
+
+  db.query(searchCountQuery,(err,rows) => {
+			if (err) {
+        console.log(err);
+        return res.status(400).send(err);
+      };
+			// console.log(rows[0].totalCount);
+			const numberOfRows = rows[0].totalCount;	
+	
+			results["totalPages"] = Math.ceil(numberOfRows/limit);
+
+			if (endIndex < numberOfRows) {
+	      results.next = {
+	        page: page + 1,
+	        limit: limit
+	      }
+	    }
+	    
+	    if (startIndex > 0) {
+	      results.previous = {
+	        page: page - 1,
+	        limit: limit
+	      }
+	    }
+
+	    db.query(searchQuery,(err,rows) => {
+	    	if (err) {
+	        console.log(err);
+	        return res.status(400).send(err);
+	      };
+	    	// console.log('rows',rows)
+
+	    	results['results'] = rows;
+	    	res.status(200).send(results);
+	    })
+		})
+
+  if(searchTerm !== ''){
+  	// console.log('in search')
+	 	db.query(searchCountQuery,(err,rows) => {
+			if (err) {
+        console.log(err);
+        return res.status(400).send(err);
+      };
+			// console.log(rows[0].totalCount);
+			const numberOfRows = rows[0].totalCount;	
+	
+			results["totalPages"] = Math.ceil(numberOfRows/limit);
+
+			if (endIndex < numberOfRows) {
+	      results.next = {
+	        page: page + 1,
+	        limit: limit
+	      }
+	    }
+	    
+	    if (startIndex > 0) {
+	      results.previous = {
+	        page: page - 1,
+	        limit: limit
+	      }
+	    }
+
+	    db.query(searchQuery,(err,rows) => {
+	    	if (err) {
+	        console.log(err);
+	        return res.status(400).send(err);
+	      };
+	    	// console.log('rows',rows)
+
+	    	results['results'] = rows;
+	    	res.status(200).send(results);
+	    })
+		})
+
+  } else {
+  	// console.log('in empty search')
+		db.query(countQuery,(err,rows) => {
+			if (err) {
+        console.log(err);
+        return res.status(400).send(err);
+      };
+			// console.log(rows[0].totalCount);
+			const numberOfRows = rows[0].totalCount;	
+
+			results["totalPages"] = Math.ceil(numberOfRows/limit);
+			
+			if (endIndex <  numberOfRows) {
+	      results.next = {
+	        page: page + 1,
+	        limit: limit
+	      }
+	    }
+	    
+	    if (startIndex > 0) {
+	      results.previous = {
+	        page: page - 1,
+	        limit: limit
+	      }
+	    }
+
+	    db.query(query,(err,rows) => {
+	    	if (err) {
+	        console.log(err);
+	        return res.status(400).send(err);
+	      };
+
+	    	results['results'] = rows;
+	    	res.status(200).send(results);
+	    })
+		})
+  }
 })
 
 // Roles : POST route
