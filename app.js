@@ -18,7 +18,7 @@ var loginRouter =  require('./routes/loginRoute.js');
 var supplierRouter = require('./routes/purchasOrder/supplierRoute');
 var departmentRouter = require('./routes/purchasOrder/departmentRoute');
 var itemRoute = require('./routes/purchasOrder/itemRoute');
-
+var userNameRoutes = require('./routes/security/userNameRoutes');;
 
 var app = express();
 app.use(cors());
@@ -53,7 +53,7 @@ app.use('/api/login', loginRouter);
 app.use('/api/supplier' , supplierRouter);
 app.use('/api/department' , departmentRouter);
 app.use('/api/item' , itemRoute);
-
+app.use('/api/user-name' , userNameRoutes);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
