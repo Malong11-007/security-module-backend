@@ -5,7 +5,7 @@ const { processedResults } = require('../../middleware/index.js')
 const { joiUserRolesInsert, joiUserRolesUpdate } = require('../../joiSchemas/security/joiUser_roles');
 
 // User_Roles : GET ALL route
-router.get('/get',processedResults('user-roles'),(req,res) => {
+router.get('/get',processedResults('user_roles'),(req,res) => {
   res.json(res.processedResults);
 })
 
@@ -17,7 +17,10 @@ router.post('/post',(req,res) => {
     return res.status(403).send(error);
   } else {
     db.query('INSERT INTO user_roles SET ?',req.body,(err,result) => {
-      if(err) throw err;
+      if (err) {
+				console.log(err);
+				return res.status(400).send(err);
+			};
       
       // console.log('Last Inserted Record : ',result.insertId)
       return res.status(200).send(`User_Role_ID : ${result.insertId} Record Inserted`)
@@ -33,7 +36,10 @@ router.put('/update/:id', (req,res) => {
     return res.status(403).send(error);
   } else {
     db.query('UPDATE user_roles SET ? Where User_Role_ID = ?',[req.body,req.params.id],(err,result) => {
-      if (err) throw err;
+      if (err) {
+				console.log(err);
+				return res.status(400).send(err);
+			};
 
       // console.log(`Changed ${result.changedRows} row(s)`);
       return res.status(200).json({

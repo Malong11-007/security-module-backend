@@ -5,7 +5,7 @@ const joiUsersInsert = Joi.object({
 	User_hpassword: Joi.string().max(250).required(),
 	User_Status: Joi.string().max(25).required(),
 	User_Email: Joi.string().max(50).email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }).required(),
-	User_Mobile: Joi.number().integer().less(99999999999).required(),
+	User_Mobile: Joi.number().integer().max(99999999999).required(),
 	Employee_ID: Joi.number().integer().max(99999999999).required(),
 	Host_ID_Restric: Joi.string().max(50).required(),
 	Last_Login_Date: Joi.date().required(),
@@ -20,14 +20,14 @@ const joiUsersInsert = Joi.object({
 	Created_By: Joi.number().required(),
 	Last_Updated_Date: Joi.date().required(),
 	Last_Updated_By: Joi.number().required(),
-})
+}).options({stripUnknown:true})
 
 const joiUsersUpdate = Joi.object({
 	User_Name : Joi.string().max(50),
 	User_hpassword: Joi.string().max(250),
 	User_Status: Joi.string().max(25),
 	User_Email: Joi.string().max(50).email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }),
-	User_Mobile: Joi.number().integer().less(99999999999),
+	User_Mobile: Joi.number().integer().max(99999999999),
 	Employee_ID: Joi.number().integer().max(99999999999),
 	Host_ID_Restric: Joi.string().max(50),
 	Last_Host_ID: Joi.string().max(50),
@@ -39,8 +39,8 @@ const joiUsersUpdate = Joi.object({
 	Branch_ID: Joi.number().integer().max(99999999999),
 	Enabled_Flag: Joi.string().max(1),
 	Last_Updated_Date: Joi.date(),
-	Last_Updated_By: Joi.number(),
-})
+	Last_Updated_By: Joi.number().integer().max(99999999999),
+}).options({stripUnknown:true})
 
 
 module.exports = {

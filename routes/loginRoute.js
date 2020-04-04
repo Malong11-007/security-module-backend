@@ -19,9 +19,9 @@ router.post('/',(req,res) => {
   const password = req.body.password;
 
   if (email && password) {
-    db.query('SELECT User_hpassword,User_ID,User_Email FROM users WHERE User_Email = ?', [email], 
+    db.query('SELECT User_Name ,User_hpassword, User_ID, User_Email, Organization_ID, Branch_ID FROM users WHERE User_Email = ?', [email], 
       (error, results, fields)=> {
-      	const { User_ID, User_hpassword } = results[0];
+      	const { User_ID, User_hpassword, Organization_ID, Branch_ID, User_Email, User_Name } = results[0];
         if (results.length > 0 && bcrypt.compareSync(password, User_hpassword)) {
       		db.query('CALL getFormsAndModules(?)',[User_ID],(error, results, fields) => {
 					  if (error) {
@@ -31,6 +31,8 @@ router.post('/',(req,res) => {
 					  	email: email,
 					  	id: User_ID
 					  }
+
+					  //Should add Organization_id in cookie to be more secure i guess
 					  const token = JWT.sign(payload,SECRET);
 					  res.cookie('access_token',token,{
 					  	maxAge:43200, // 12 Hours
@@ -38,6 +40,11 @@ router.post('/',(req,res) => {
 					  	// secure:true // will be set in productions requires HTTPS
 					  })
 					  res.status(200).json({
+					  	User_ID,
+					  	User_Name,
+					  	User_Email,
+					  	Organization_ID,
+					  	Branch_ID,
 					  	forms:results[0],
 					  	modules:results[1]
 					  })

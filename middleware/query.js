@@ -22,7 +22,7 @@ switch (tableName) {
       Role_Desc LIKE '%${searchTerm}%'`;
     break;
 
-  case "rolesForms": 
+  case "roles_forms": 
     query = `SELECT * from ${tableName} ORDER BY Role_Form_ID ASC limit ${limit} OFFSET ${startIndex}`;
     searchQuery = `SELECT * from ${tableName} WHERE Role_ID LIKE '%${searchTerm}%' OR
       Form_ID LIKE '%${searchTerm}%' OR Role_Form_ID LIKE '%${searchTerm}%'
@@ -32,7 +32,7 @@ switch (tableName) {
       ORDER BY Role_Form_ID ASC limit ${limit} OFFSET ${startIndex}`;
     break;
 
-  case "rolesModules": 
+  case "roles_modules": 
     query = `SELECT * from ${tableName} ORDER BY Role_Module_ID ASC limit ${limit} OFFSET ${startIndex}`;
     searchQuery = `SELECT * from ${tableName} WHERE Role_ID LIKE '%${searchTerm}%' OR
       Module_ID LIKE '%${searchTerm}%' OR Role_Module_ID LIKE '%${searchTerm}%'
@@ -42,7 +42,7 @@ switch (tableName) {
       ORDER BY Role_Module_ID ASC limit ${limit} OFFSET ${startIndex}`;
     break;
 
-  case "usersRoles": 
+  case "users_roles": 
     query = `SELECT * from ${tableName} ORDER BY User_Role_ID ASC limit ${limit} OFFSET ${startIndex}`;
     searchQuery = `SELECT * from ${tableName} WHERE Role_ID LIKE '%${searchTerm}%' OR
       User_ID LIKE '%${searchTerm}%' OR User_Role_ID LIKE '%${searchTerm}%'

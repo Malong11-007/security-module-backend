@@ -17,7 +17,10 @@ router.post("/post", (req, res) => {
 		return res.status(403).send(error);
 	} else {
 		db.query("INSERT INTO application SET ?", req.body, (err, result) => {
-			if (err) throw err;
+			if (err) {
+				console.log(err);
+				return res.status(400).send(err);
+			};
 
 			// console.log('Last Inserted Record : ',result.insertId)
 			return res
@@ -38,7 +41,10 @@ router.put("/update/:id", (req, res) => {
 			"UPDATE application SET ? Where Application_ID = ?",
 			[req.body, req.params.id],
 			(err, result) => {
-				if (err) throw err;
+				if (err) {
+					console.log(err);
+					return res.status(400).send(err);
+				};
 
 				// console.log(`Changed ${result.changedRows} row(s)`);
 				return res.status(200).json({

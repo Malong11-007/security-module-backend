@@ -14,7 +14,7 @@ const processedResults = (tableName) => {
     countQuery,
     searchQuery,
     searchCountQuery } = getQueryFromTable(tableName,searchTerm,limit,startIndex);
-    
+    console.log(query,countQuery)
 		const results = {};	
 
     if(searchTerm !== ''){
