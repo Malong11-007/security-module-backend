@@ -13,7 +13,7 @@ router.get('/get/:Organization_ID',(req,res) => {
   const { Organization_ID } = req.params
  
   let searchQuery = 
-  `SELECT Role_Form_ID,r.Role_ID,r.Role_Name,f.Form_ID,f.Form_Name, rf.Enabled_Flag
+  `SELECT Role_Form_ID,r.Role_ID,r.Role_Name,f.Form_ID,f.Form_Name,m.Module_ID,m.Module_Name, rf.Enabled_Flag
   from roles_forms AS rf INNER JOIN roles AS r ON rf.Role_ID = r.Role_ID
   INNER JOIN modules AS m ON rf.Module_ID = m.Module_ID
   INNER JOIN forms AS f ON rf.Form_ID = f.Form_ID

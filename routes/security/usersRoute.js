@@ -18,7 +18,7 @@ router.get('/get/:Organization_ID',(req,res) => {
   Branch_ID, Enabled_Flag from users WHERE User_Name LIKE '%${searchTerm}%' OR
   User_Status LIKE '%${searchTerm}%' OR User_Email LIKE '%${searchTerm}%' OR
   User_Mobile LIKE '%${searchTerm}%' OR Employee_ID LIKE '%${searchTerm}%' OR
-  Host_ID_Restric LIKE '%${searchTerm}%' OR Account_Looked_Flag LIKE '%${searchTerm}%' OR
+  Host_ID_Restric LIKE '%${searchTerm}%' OR Account_Locked_Flag LIKE '%${searchTerm}%' OR
   User_ID LIKE '%${searchTerm}%' OR HostID_at_Time_Locked LIKE '%${searchTerm}%'
   AND Organization_ID = ${Organization_ID}
   ORDER BY User_ID ASC limit ${limit} OFFSET ${startIndex}`;
@@ -27,7 +27,7 @@ router.get('/get/:Organization_ID',(req,res) => {
   `SELECT count(*) as totalCount from users WHERE User_Name LIKE '%${searchTerm}%' OR
   User_Status LIKE '%${searchTerm}%' OR User_Email LIKE '%${searchTerm}%' OR
   User_Mobile LIKE '%${searchTerm}%' OR Employee_ID LIKE '%${searchTerm}%' OR
-  Host_ID_Restric LIKE '%${searchTerm}%' OR Account_Looked_Flag LIKE '%${searchTerm}%' OR
+  Host_ID_Restric LIKE '%${searchTerm}%' OR Account_Locked_Flag LIKE '%${searchTerm}%' OR
   User_ID LIKE '%${searchTerm}%' OR HostID_at_Time_Locked LIKE '%${searchTerm}%'
   AND Organization_ID = ${Organization_ID}
   ORDER BY User_ID ASC limit ${limit} OFFSET ${startIndex}`;
@@ -125,5 +125,20 @@ router.delete('/delete/:id',(req,res) => {
     });
   })
 })
+
+// GET Only Usernames 
+router.get("/get/names/:Organization_ID", (req, res) => {
+	const { Organization_ID } = req.params;
+
+	const sql = "select User_ID, User_Name from users where Organization_ID = ?";
+	db.query(sql, [Organization_ID], (err, results) => {
+		if (err) {
+			console.log(err);
+			return res.status(400).send(err);
+		} else {
+			return res.status(200).json(results);
+		}
+	});
+});
 
 module.exports = router;
