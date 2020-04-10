@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const db = require('../../config/db');
+const bcrypt = require('bcryptjs');
 const { joiUsersInsert, joiUsersUpdate } = require('../../joiSchemas/security/joiUsers');
 
 // User : GET ALL route
@@ -78,6 +79,8 @@ router.post('/post',(req,res) => {
     console.log(error);
     return res.status(403).send(error);
   } else {
+  	let hashedPassword = bcrypt.hashSync(value.User_hpassword,10); // hashing password
+  	value.User_hpassword = hashedPassword; 
     db.query('INSERT INTO users SET ?',req.body,(err,result) => {
       if (err) {
 				console.log(err);

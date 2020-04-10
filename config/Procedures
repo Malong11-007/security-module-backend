@@ -1,3 +1,5 @@
+
+// getFormsAndModules
 CREATE DEFINER=`root`@`localhost` PROCEDURE `getFormsAndModules`(IN userID INT)
 BEGIN
 	SET @modulesID := (SELECT GROUP_CONCAT(Module_ID) FROM techbiz_ebs.roles_forms WHERE Role_ID IN (SELECT Role_ID FROM techbiz_ebs.user_roles WHERE User_ID = userID));
@@ -9,13 +11,15 @@ BEGIN
 END
 
 
-// Incomplete
+// Incomplete : getItemDetails
 CREATE DEFINER=`root`@`localhost` PROCEDURE `getItemDetails`(IN itemID INT, IN uomID INT)
 BEGIN
 	select UOM_Name from uom where UOM_ID = uomID;
     -- remaining queries to be added
 END
 
+
+// getRolesModulesForms
 CREATE DEFINER=`root`@`localhost` PROCEDURE `getRolesModulesForms`(
 	IN `OrganizationID` INT
 )
@@ -24,3 +28,9 @@ SELECT Form_ID,Form_Name,Module_ID FROM forms;
 SELECT Module_ID,Module_Name FROM modules;
 SELECT Role_ID,Role_Name FROM roles WHERE Organization_ID = OrganizationID;
 END
+
+
+/* Note : Changes in DB */
+1. added Enabled_Flag in purchase_order_header
+2. Changed DateType of Price, GST_Per, GST_Amt to Float 
+3. Default Value for WHT_Per, WHT_Amt set to NULL 

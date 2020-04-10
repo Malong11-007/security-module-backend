@@ -1,10 +1,11 @@
 var express = require('express');
 var router = express.Router();
 const db = require('../../config/db');
+const { isAuthenticated } = require('../../middleware/isAuthenticated.js');
 const { joiRolesFormsInsert, joiRolesFormsUpdate } = require('../../joiSchemas/security/joiRoles_forms');
 
 // roles_forms : GET ALL route
-router.get('/get/:Organization_ID',(req,res) => {
+router.get('/get/:Organization_ID',isAuthenticated,(req,res) => {
   const page = parseInt(req.query.page)
   const limit = parseInt(req.query.limit)
   const searchTerm = req.query.search;
@@ -69,7 +70,7 @@ router.get('/get/:Organization_ID',(req,res) => {
 })
 
 // roles_forms : POST route
-router.post('/post',(req,res) => {
+router.post('/post',isAuthenticated,(req,res) => {
   const { error, value } = joiRolesFormsInsert.validate(req.body);
   if(error){
     console.log(error);
@@ -88,7 +89,7 @@ router.post('/post',(req,res) => {
 })
 
 // roles_forms : UPDATE route
-router.put('/update/:id', (req,res) => {
+router.put('/update/:id',isAuthenticated, (req,res) => {
   const { error, value } = joiRolesFormsUpdate.validate(req.body);
   if(error){
     console.log(error);
@@ -110,7 +111,7 @@ router.put('/update/:id', (req,res) => {
 })
 
 // roles_forms : DELETE route
-router.delete('/delete/:id',(req,res) => {
+router.delete('/delete/:id',isAuthenticated,(req,res) => {
   db.query('DELETE from roles_forms Where Role_form_ID = ?',[req.params.id],(err,result) => {
     if (err){
       console.log(err)
