@@ -12,6 +12,7 @@ const isAuthenticated = (req, res, next) => {
 			} else {
 				const { email, id } = decoded;
 				if(email){
+					console.log(email);
 					db.query('SELECT count(*) as totalCount FROM users WHERE User_Email = ? AND User_ID = ?',[email,id],(err,results) => {
 						if(err){
 							console.log(err)
@@ -29,6 +30,8 @@ const isAuthenticated = (req, res, next) => {
 				}
 			}
 		})
+	} else {
+		res.status(401).send('Unauthorized.');
 	}
 };
 

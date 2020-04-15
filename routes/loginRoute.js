@@ -40,7 +40,7 @@ router.post('/',(req,res) => {
 						  //Should add Organization_id in cookie to be more secure i guess
 						  const token = JWT.sign(payload,SECRET);
 						  res.cookie('access_token',token,{
-						  	maxAge: 1000 * 60 * 60 * 24 * 365, // 12 Hours
+						  	maxAge: 1000 * 60 * 60 * 24 * 365, // Unlimited Time
 						  	httpOnly:true,
 						  	// secure:true // will be set in productions requires HTTPS
 						  })
@@ -71,7 +71,7 @@ router.post('/',(req,res) => {
 /* Logout Route */
 router.post('/logout',isAuthenticated,(req,res) => {
 	res.cookie('access_token','',{
-  	maxAge: 1000 * 60 * 60 * 24 * 365, // 12 Hours
+  	maxAge: 1000, 
   	httpOnly:true,
   	// secure:true // will be set in productions requires HTTPS
   })
